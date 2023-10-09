@@ -1,0 +1,51 @@
+name: CI
+on: [pull_request]
+jobs:
+  pull_request_status_check:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: csye6225_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run CI test
+        run: |
+          export FLASK_APP=app
+          export FLASK_DEBUG=True
+          export DATABASE_URL=${{ secrets.DATABASE_URL }}
+          export CSV_PATH=./users.csv
+
+          # Starting Flask app in the background
+          # flask run & 
+
+          # sleep 10
+
+          # Check health endpoint.
+          # curl -f http://127.0.0.1:5000/healthz
+
+          # Run the tests
+          python -m unittest integration-test.py
