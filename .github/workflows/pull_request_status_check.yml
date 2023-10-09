@@ -40,7 +40,7 @@ jobs:
           export CSV_PATH=./users.csv
 
           # Starting Flask app in the background
-          # flask run &  
+          # flask run & 
 
           # sleep 10
 
