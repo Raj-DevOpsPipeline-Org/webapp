@@ -46,6 +46,7 @@ sudo -u postgres psql -c "CREATE DATABASE csye6225_db OWNER raj;"
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE csye6225_db TO raj;"
 
 # Install Python packages
+pip install --upgrade pip
 pip install -r /tmp/requirements.txt
 
 # Move users.csv to /opt/
