@@ -12,10 +12,38 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Check out code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: 3.11
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run CI test
+      run: |
+        export FLASK_APP=app
+        export FLASK_DEBUG=True
+        export DATABASE_URL=${{ secrets.DATABASE_URL }}
+        export CSV_PATH=./users.csv
+
+        # Run the tests
+        python -m unittest integration-test.py
+
     - name: Create webapp zip
       run: |
         zip -r webapp.zip . -x '*.git*' -x '.env' -x 'venv/*'
+        
+    - name: Upload webapp.zip
+      uses: actions/upload-artifact@v2
+      with:
+        name: webapp.zip
+        path: webapp.zip
+      
 
   build-ami:
     runs-on: ubuntu-latest
