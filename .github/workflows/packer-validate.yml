@@ -10,6 +10,10 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v2
 
+    - name: Create webapp zip
+      run: |
+        zip -r webapp.zip . -x '*.git*' -x '.env' -x 'venv/*'
+
     - name: Validate Packer template
       run: |
         packer init .
