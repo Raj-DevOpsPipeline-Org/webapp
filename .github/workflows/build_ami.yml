@@ -1,9 +1,10 @@
 name: Build and Share AMI
 
-on:
-  push:
-    branches:
-      - main
+# on:
+#   push:
+#     branches:
+#       - main
+on: [pull_request]
 
 jobs:
   build-artifact:
@@ -38,7 +39,6 @@ jobs:
         echo "PKR_VAR_instance_type=${{ vars.INSTANCE_TYPE }}" >> $GITHUB_ENV
         echo "PKR_VAR_volume_size=${{ vars.VOLUME_SIZE }}" >> $GITHUB_ENV
         echo "PKR_VAR_volume_type=${{ vars.VOLUME_TYPE }}" >> $GITHUB_ENV
-        echo "PKR_VAR_ami_regions=${{ vars.AMI_REGIONS }}" >> $GITHUB_ENV
         echo "PKR_VAR_ami_users=${{ vars.AMI_USERS }}" >> $GITHUB_ENV
         echo "PKR_VAR_DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
         echo "PKR_VAR_FLASK_APP=${{ vars.FLASK_APP }}" >> $GITHUB_ENV

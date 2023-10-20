@@ -42,10 +42,10 @@ variable "volume_type" {
   default = "gp2"
 }
 
-variable "ami_regions" {
-  type    = list(string)
-  default = ["us-west-1"]
-}
+// variable "ami_regions" {
+//   type    = list(string)
+//   default = ["us-west-1"]
+// }
 
 
 variable "ami_users" {
@@ -86,7 +86,9 @@ source "amazon-ebs" "my-ami" {
   source_ami      = var.source_ami
   ssh_username    = var.ssh_username
   subnet_id       = var.subnet_id
-  ami_regions     = ["us-west-1"]
+  ami_regions     = [
+    "us-west-1",
+    ]
   ami_users       = var.ami_users
 
   launch_block_device_mappings {
