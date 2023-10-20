@@ -101,15 +101,11 @@ build {
   sources = [
     "source.amazon-ebs.my-ami"
   ]
-  provisioner "file" {
-    source      = "requirements.txt"
-    destination = "/tmp/requirements.txt"
-  }
 
-  provisioner "file" {
-    source      = "users.csv"
-    destination = "/tmp/users.csv"
-  }
+provisioner "file" {
+  source      = "webapp.zip"
+  destination = "/tmp/webapp.zip"
+}
 
 
   provisioner "shell" {

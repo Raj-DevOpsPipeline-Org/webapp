@@ -45,12 +45,18 @@ sudo -u postgres psql -c "CREATE USER raj WITH PASSWORD '$DB_PASSWORD';"
 sudo -u postgres psql -c "CREATE DATABASE csye6225_db OWNER raj;"
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE csye6225_db TO raj;"
 
-# Install Python packages
-pip install --upgrade pip
-pip install -r /tmp/requirements.txt
+sudo unzip /tmp/webapp.zip -d /opt/webapp/
 
 # Move users.csv to /opt/
 sudo mv /tmp/users.csv /opt/
 
+# Install Python packages
+pip install --upgrade pip
+pip install -r /tmp/requirements.txt
+
 ls -l /tmp/
 ls -la /opt/
+
+cd /opt/webapp/
+flask db upgrade
+flask populate_db
