@@ -12,5 +12,6 @@ jobs:
 
     - name: Validate Packer template
       run: |
+        packer init .
         packer fmt -check aws-debian.pkr.hcl
         packer validate aws-debian.pkr.hcl
