@@ -6,6 +6,7 @@ name: Build and Share AMI
 #       - main
 on: [pull_request]
 
+
 jobs:
   build-artifact:
     runs-on: ubuntu-latest

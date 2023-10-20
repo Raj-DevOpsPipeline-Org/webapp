@@ -48,6 +48,7 @@ variable "volume_type" {
 // }
 
 
+
 variable "ami_users" {
   type    = list(string)
   default = ["475169959315"]
