@@ -87,10 +87,10 @@ source "amazon-ebs" "my-ami" {
   source_ami      = var.source_ami
   ssh_username    = var.ssh_username
   subnet_id       = var.subnet_id
-  ami_regions     = [
+  ami_regions = [
     "us-west-1",
-    ]
-  ami_users       = var.ami_users
+  ]
+  ami_users = var.ami_users
 
   launch_block_device_mappings {
     delete_on_termination = true
