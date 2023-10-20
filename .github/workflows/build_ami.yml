@@ -27,24 +27,24 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ env.AWS_REGION }}
+        aws-region: ${{ vars.AWS_REGION }}
 
     - name: Set environment variables for Packer
       run: |
-        echo "PKR_VAR_aws_region=${{ env.AWS_REGION }}" >> $GITHUB_ENV
-        echo "PKR_VAR_source_ami=${{ env.SOURCE_AMI }}" >> $GITHUB_ENV
-        echo "PKR_VAR_ssh_username=${{ env.SSH_USERNAME }}" >> $GITHUB_ENV
-        echo "PKR_VAR_subnet_id=${{ env.SUBNET_ID }}" >> $GITHUB_ENV
-        echo "PKR_VAR_instance_type=${{ env.INSTANCE_TYPE }}" >> $GITHUB_ENV
-        echo "PKR_VAR_volume_size=${{ env.VOLUME_SIZE }}" >> $GITHUB_ENV
-        echo "PKR_VAR_volume_type=${{ env.VOLUME_TYPE }}" >> $GITHUB_ENV
-        echo "PKR_VAR_ami_regions=${{ env.AMI_REGIONS }}" >> $GITHUB_ENV
-        echo "PKR_VAR_ami_users=${{ env.AMI_USERS }}" >> $GITHUB_ENV
+        echo "PKR_VAR_aws_region=${{ vars.AWS_REGION }}" >> $GITHUB_ENV
+        echo "PKR_VAR_source_ami=${{ vars.SOURCE_AMI }}" >> $GITHUB_ENV
+        echo "PKR_VAR_ssh_username=${{ vars.SSH_USERNAME }}" >> $GITHUB_ENV
+        echo "PKR_VAR_subnet_id=${{ vars.SUBNET_ID }}" >> $GITHUB_ENV
+        echo "PKR_VAR_instance_type=${{ vars.INSTANCE_TYPE }}" >> $GITHUB_ENV
+        echo "PKR_VAR_volume_size=${{ vars.VOLUME_SIZE }}" >> $GITHUB_ENV
+        echo "PKR_VAR_volume_type=${{ vars.VOLUME_TYPE }}" >> $GITHUB_ENV
+        echo "PKR_VAR_ami_regions=${{ vars.AMI_REGIONS }}" >> $GITHUB_ENV
+        echo "PKR_VAR_ami_users=${{ vars.AMI_USERS }}" >> $GITHUB_ENV
         echo "PKR_VAR_DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
-        echo "PKR_VAR_FLASK_APP=${{ env.FLASK_APP }}" >> $GITHUB_ENV
-        echo "PKR_VAR_FLASK_DEBUG=${{ env.FLASK_DEBUG }}" >> $GITHUB_ENV
+        echo "PKR_VAR_FLASK_APP=${{ vars.FLASK_APP }}" >> $GITHUB_ENV
+        echo "PKR_VAR_FLASK_DEBUG=${{ vars.FLASK_DEBUG }}" >> $GITHUB_ENV
         echo "PKR_VAR_DATABASE_URL=${{ secrets.DATABASE_URL }}" >> $GITHUB_ENV
-        echo "PKR_VAR_CSV_PATH=${{ env.CSV_PATH }}" >> $GITHUB_ENV
+        echo "PKR_VAR_CSV_PATH=${{ vars.CSV_PATH }}" >> $GITHUB_ENV
 
     - name: Build AMI with Packer
       run: |
