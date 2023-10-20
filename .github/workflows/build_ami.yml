@@ -38,6 +38,7 @@ jobs:
         echo "PKR_VAR_instance_type=${{ secrets.INSTANCE_TYPE }}" >> $GITHUB_ENV
         echo "PKR_VAR_volume_size=${{ secrets.VOLUME_SIZE }}" >> $GITHUB_ENV
         echo "PKR_VAR_volume_type=${{ secrets.VOLUME_TYPE }}" >> $GITHUB_ENV
+        echo "PKR_VAR_ami_regions=${{ secrets.AMI_REGIONS }}" >> $GITHUB_ENV
         echo "PKR_VAR_ami_users=${{ secrets.AMI_USERS }}" >> $GITHUB_ENV
         echo "PKR_VAR_DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
         echo "PKR_VAR_FLASK_APP=${{ secrets.FLASK_APP }}" >> $GITHUB_ENV
