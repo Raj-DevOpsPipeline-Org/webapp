@@ -8,7 +8,7 @@ on: [pull_request]
 
 
 jobs:
-  build-artifact:
+  build-and-share-ami:
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -52,21 +52,7 @@ jobs:
     - name: Create webapp zip
       run: |
         zip -r webapp.zip . -x '*.git*' -x '.env' -x 'venv/*'
-
-    - name: Upload webapp.zip
-      uses: actions/upload-artifact@v2
-      with:
-        name: webapp.zip
-        path: webapp.zip
       
-
-  build-ami:
-    runs-on: ubuntu-latest
-    needs: build-artifact
-    steps:
-    - name: Check out code
-      uses: actions/checkout@v2
-
     - name: Set up AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
@@ -90,12 +76,6 @@ jobs:
         echo "PKR_VAR_DATABASE_URL=${{ secrets.DATABASE_URL }}" >> $GITHUB_ENV
         echo "PKR_VAR_CSV_PATH=${{ vars.CSV_PATH }}" >> $GITHUB_ENV
     
-    - name: Download webapp.zip
-      uses: actions/download-artifact@v2
-      with:
-        name: webapp.zip
-        path: .
-      
     - name: Build AMI with Packer
       run: |
         packer init .
