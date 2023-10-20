@@ -1,0 +1,16 @@
+name: Packer Validation
+
+on: [pull_request]
+
+jobs:
+  packer-validate:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+
+    - name: Validate Packer template
+      run: |
+        packer fmt -check aws-debian.pkr.hcl
+        packer validate aws-debian.pkr.hcl
