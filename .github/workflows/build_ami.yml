@@ -89,7 +89,13 @@ jobs:
         echo "PKR_VAR_FLASK_DEBUG=${{ vars.FLASK_DEBUG }}" >> $GITHUB_ENV
         echo "PKR_VAR_DATABASE_URL=${{ secrets.DATABASE_URL }}" >> $GITHUB_ENV
         echo "PKR_VAR_CSV_PATH=${{ vars.CSV_PATH }}" >> $GITHUB_ENV
-
+    
+    - name: Download webapp.zip
+      uses: actions/download-artifact@v2
+      with:
+        name: webapp.zip
+        path: .
+      
     - name: Build AMI with Packer
       run: |
         packer init .
