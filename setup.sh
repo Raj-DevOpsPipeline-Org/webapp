@@ -46,6 +46,8 @@ sudo -u postgres psql -c "CREATE DATABASE csye6225_db OWNER raj;"
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE csye6225_db TO raj;"
 
 sudo unzip /tmp/webapp.zip -d /opt/webapp/
+sudo mv /opt/webapp/users.csv /opt/users.csv
+
 ls -l /tmp/
 ls -la /opt/
 
