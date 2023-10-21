@@ -51,6 +51,12 @@ sudo mv /opt/webapp/users.csv /opt/users.csv
 ls -l /tmp/
 ls -la /opt/
 
+echo "export DB_PASSWORD='$DB_PASSWORD'" >> ~/.bashrc
+echo "export FLASK_APP='$FLASK_APP'" >> ~/.bashrc
+echo "export FLASK_DEBUG='$FLASK_DEBUG'" >> ~/.bashrc
+echo "export DATABASE_URL='$DATABASE_URL'" >> ~/.bashrc
+echo "export CSV_PATH='$CSV_PATH'" >> ~/.bashrc
+
 cd /opt/webapp/
 
 # Install Python packages
