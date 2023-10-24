@@ -123,4 +123,4 @@ build {
     ]
     script = "./setup.sh"
   }
-}
+
