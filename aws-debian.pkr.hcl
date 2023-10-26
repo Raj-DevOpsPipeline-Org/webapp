@@ -42,12 +42,6 @@ variable "volume_type" {
   default = "gp2"
 }
 
-// variable "ami_regions" {
-//   type    = list(string)
-//   default = ["us-west-1"]
-// }
-
-
 
 variable "ami_users" {
   type    = list(string)
