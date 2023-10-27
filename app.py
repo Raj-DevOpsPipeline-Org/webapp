@@ -15,7 +15,10 @@ from models import Account, db
 from populate_db import populate_db
 
 # Load environment variables
-load_dotenv('/opt/webapp.properties')
+if os.path.exists("/opt/webapp.properties"):
+    load_dotenv("/opt/webapp.properties")
+else:
+    load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
