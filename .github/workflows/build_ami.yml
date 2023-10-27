@@ -68,11 +68,6 @@ jobs:
         echo "PKR_VAR_volume_size=${{ vars.VOLUME_SIZE }}" >> $GITHUB_ENV
         echo "PKR_VAR_volume_type=${{ vars.VOLUME_TYPE }}" >> $GITHUB_ENV
         echo "PKR_VAR_ami_users=${{ vars.AMI_USERS }}" >> $GITHUB_ENV
-        echo "PKR_VAR_DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
-        echo "PKR_VAR_FLASK_APP=${{ vars.FLASK_APP }}" >> $GITHUB_ENV
-        echo "PKR_VAR_FLASK_DEBUG=${{ vars.FLASK_DEBUG }}" >> $GITHUB_ENV
-        echo "PKR_VAR_DATABASE_URL=${{ secrets.DATABASE_URL }}" >> $GITHUB_ENV
-        echo "PKR_VAR_CSV_PATH=${{ vars.CSV_PATH }}" >> $GITHUB_ENV
     
     - name: Build AMI with Packer
       run: |
