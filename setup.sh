@@ -41,6 +41,7 @@ sudo apt-get install -y postgresql-client-15
 
 sudo unzip /tmp/webapp.zip -d /opt/webapp/
 sudo mv /opt/webapp/users.csv /opt/users.csv
+sudo mv /tmp/webapp/csye6225.service /etc/systemd/system/csye6225.service
 
 ls -l /tmp/
 ls -la /opt/
@@ -50,3 +51,7 @@ cd /opt/webapp/
 # Install Python packages
 pip3 install --upgrade pip
 pip3 install -r /opt/webapp/requirements.txt
+
+sudo systemctl enable csye6225
+sudo systemctl start csye6225
+

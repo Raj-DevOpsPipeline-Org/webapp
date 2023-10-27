@@ -1,0 +1,16 @@
+[Unit]
+Description=Auto Run CSYE webapp
+Requires=cloud-final.service
+ConditionPathExists=/opt/webapp.properties
+After=network.target
+
+[Service]
+Type=simple
+User=csye6225
+Group=csye6225
+WorkingDirectory=/opt/webapp
+ExecStart=/home/admin/.pyenv/shims/flask --app=app run --host=0.0.0.0
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

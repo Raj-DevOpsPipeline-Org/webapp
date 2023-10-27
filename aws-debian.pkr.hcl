@@ -104,6 +104,10 @@ build {
     destination = "/tmp/webapp.zip"
   }
 
+  provisioner "file" {
+    source      = "csye6225.service"
+    destination = "/tmp/csye6225.service"
+  }
 
   provisioner "shell" {
     environment_vars = [
