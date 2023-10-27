@@ -6,11 +6,11 @@ sudo apt-get update && sudo apt-get upgrade -y
 # Install required packages
 sudo apt-get install -y build-essential libssl-dev zlib1g-dev wget \
 libreadline-dev libsqlite3-dev curl libbz2-dev xz-utils tk-dev libffi-dev \
-unzip python3.11 python3.11-venv python3-pip python-is-python3
-
+unzip python3.11 python3.11-venv python3-pip
 
 # Check Python version
-python --version
+python3 --version
+
 
 # Create the User and Group for the Application
 sudo groupadd csye6225
@@ -28,8 +28,8 @@ ls -la /opt/
 cd /opt/webapp/
 
 # Install Python packages
-pip install --upgrade pip
-pip install -r /opt/webapp/requirements.txt
+pip3 install --upgrade pip
+pip3 install -r /opt/webapp/requirements.txt
 
 
 flask db upgrade
