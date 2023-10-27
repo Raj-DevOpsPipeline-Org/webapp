@@ -32,7 +32,8 @@ sudo apt-get install -y postgresql-client-15
 
 sudo unzip /tmp/webapp.zip -d /opt/webapp/
 sudo mv /opt/webapp/users.csv /opt/users.csv
-sudo mv /tmp/webapp/csye6225.service /etc/systemd/system/csye6225.service
+sudo mv /tmp/csye6225.service /etc/systemd/system/csye6225.service
+
 
 ls -l /tmp/
 ls -la /opt/
