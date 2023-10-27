@@ -50,7 +50,3 @@ cd /opt/webapp/
 # Install Python packages
 pip3 install --upgrade pip
 pip3 install -r /opt/webapp/requirements.txt
-
-
-flask db upgrade
-flask populate_db
