@@ -8,6 +8,7 @@ sudo apt-get install -y build-essential libssl-dev zlib1g-dev wget \
 libreadline-dev libsqlite3-dev curl libbz2-dev xz-utils tk-dev libffi-dev \
 unzip python3.11 python3.11-venv python3-pip python-is-python3
 
+
 # Check Python version
 python --version
 
