@@ -4,15 +4,12 @@
 sudo apt-get update && sudo apt-get upgrade -y
 
 # Install required packages
-sudo apt-get install -y build-essential libssl-dev zlib1g-dev libbz2-dev \
-libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev \
-xz-utils tk-dev libffi-dev liblzma-dev python3-openssl unzip software-properties-common
+sudo apt-get install -y build-essential libssl-dev zlib1g-dev wget \
+libreadline-dev libsqlite3-dev curl libbz2-dev xz-utils tk-dev libffi-dev \
+unzip python3.11 python3.11-venv python3-pip python-is-python3
 
-# Add the Python PPA and install Python 3.11
-sudo add-apt-repository ppa:deadsnakes/ppa -y
-sudo apt-get update
-sudo apt-get install -y python3.11 python3.11-venv
 
+# Check Python version
 python --version
 
 # Create the User and Group for the Application
