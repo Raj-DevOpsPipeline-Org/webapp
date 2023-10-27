@@ -11,6 +11,7 @@ unzip python3.11 python3.11-venv python3-pip
 # Check Python version
 python3 --version
 
+
 # Create the User and Group for the Application
 sudo groupadd csye6225
 sudo useradd -s /bin/false -g csye6225 -d /opt/csye6225 -m csye6225
