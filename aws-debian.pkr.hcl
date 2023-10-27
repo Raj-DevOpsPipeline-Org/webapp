@@ -109,11 +109,6 @@ build {
     environment_vars = [
       "DEBIAN_FRONTEND=noninteractive",
       "CHECKPOINT_DISABLE=1",
-      "DB_PASSWORD=${var.DB_PASSWORD}",
-      "FLASK_APP=${var.FLASK_APP}",
-      "FLASK_DEBUG=${var.FLASK_DEBUG}",
-      "DATABASE_URL=${var.DATABASE_URL}",
-      "CSV_PATH=${var.CSV_PATH}"
     ]
     script = "./setup.sh"
   }
