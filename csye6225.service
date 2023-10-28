@@ -9,9 +9,7 @@ Type=simple
 User=csye6225
 Group=csye6225
 WorkingDirectory=/opt/webapp
-ExecStartPre=/home/admin/.pyenv/shims/flask db upgrade
-ExecStartPre=/home/admin/.pyenv/shims/flask db_populate
-ExecStart=/home/admin/.pyenv/shims/flask --app=app run --host=0.0.0.0
+ExecStart=/bin/bash -c '/home/admin/.pyenv/shims/flask db upgrade && /home/admin/.pyenv/shims/flask db_populate && /home/admin/.pyenv/shims/flask --app=app run --host=0.0.0.0'
 Restart=always
 
 [Install]
