@@ -41,9 +41,6 @@ sudo useradd -s /bin/false -g csye6225 -d /opt/csye6225 -m csye6225
 sudo groupadd csye6225
 sudo useradd -s /bin/false -g csye6225 -d /opt/csye6225 -m csye6225
 
-# install postgresql client
-sudo apt-get install -y postgresql-client-15
-
 sudo unzip /tmp/webapp.zip -d /opt/webapp/
 sudo mv /opt/webapp/users.csv /opt/users.csv
 sudo mv /tmp/csye6225.service /etc/systemd/system/csye6225.service
