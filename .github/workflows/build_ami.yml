@@ -41,6 +41,7 @@ jobs:
       run: |
         sudo mkdir -p /var/log/webapp
         sudo touch /var/log/webapp/csye6225.log
+        sudo chown csye6225:csye6225 /var/log/webapp/csye6225.log
         sudo chmod 666 /var/log/webapp/csye6225.log
 
     - name: Run CI test
