@@ -1,5 +1,6 @@
 import logging
 import os
+import time
 from logging import FileHandler
 
 import psycopg2
@@ -40,9 +41,15 @@ app.register_blueprint(assignments_bp)
 file_handler = FileHandler("/var/log/webapp/csye6225.log")
 file_handler.setLevel(logging.INFO)
 
-formatter = jsonlogger.JsonFormatter(
+
+class UTCJsonFormatter(jsonlogger.JsonFormatter):
+    converter = time.gmtime
+
+
+formatter = UTCJsonFormatter(
     fmt="%(asctime)s %(levelname)s %(message)s",
     rename_fields={"asctime": "date_time", "levelname": "log_level"},
+    datefmt="%a %b %d %H:%M:%S %Z %Y",
 )
 
 file_handler.setFormatter(formatter)
@@ -90,7 +97,6 @@ def database_health_check():
         app.logger.error(f"Database connection failed for health check: {e}")
         response = Response(status=503, headers=headers)
 
-    statsd.incr("csye6225_endpoint_healthz_http_get")
     return response
 
 
