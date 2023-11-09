@@ -32,10 +32,13 @@ python --version
 #remove git
 sudo apt-get remove --purge -y git
 
-LOG_DIR="/var/log/webapp"
-sudo mkdir -p ${LOG_DIR}
-sudo chown csye6225:csye6225 ${LOG_DIR}
-sudo chmod 755 ${LOG_DIR}
+sudo mkdir -p /var/log/webapp
+sudo chown csye6225:csye6225 /var/log/webapp
+sudo chmod 755 /var/log/webapp
+
+sudo touch /var/log/webapp/csye6225.log
+sudo chown csye6225:csye6225 /var/log/webapp/csye6225.log
+sudo chmod 664 /var/log/webapp/csye6225.log
 
 # Install the CloudWatch Logs agent
 wget https://s3.amazonaws.com/amazoncloudwatch-agent/debian/amd64/latest/amazon-cloudwatch-agent.deb
@@ -74,25 +77,13 @@ sudo bash -c 'cat <<EOF > /opt/cloudwatch-config.json
 }
 EOF'
 
-# Configure the CloudWatch Agent to fetch the configuration and start
-sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
-    -a fetch-config \
-    -m ec2 \
-    -c file:/opt/cloudwatch-config.json \
-    -s
-
-# Enable the CloudWatch Agent to start on boot
-sudo systemctl enable amazon-cloudwatch-agent
-
 # Create the User and Group for the Application
 sudo groupadd csye6225
 sudo useradd -s /bin/false -g csye6225 -d /opt/csye6225 -m csye6225
 
-
 sudo unzip /tmp/webapp.zip -d /opt/webapp/
 sudo mv /opt/webapp/users.csv /opt/users.csv
 sudo mv /tmp/csye6225.service /etc/systemd/system/csye6225.service
-
 
 ls -l /tmp/
 ls -la /opt/
@@ -104,4 +95,3 @@ pip install --upgrade pip
 pip install -r /opt/webapp/requirements.txt
 
 sudo systemctl enable csye6225
-
