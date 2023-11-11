@@ -86,7 +86,7 @@ def create_assignment():
         assignment = create_or_update_assignment(data, user)
         db.session.add(assignment)
         db.session.commit()
-        app.logger.info(f"Assignment created successfully for user: {user_email}")
+        app.logger.info(f"Assignment created successfully by user: {user_email}")
 
         return jsonify(assignment.to_dict()), 201
 
@@ -131,7 +131,7 @@ def get_assignment_detail(assignment_id):
         # retrieve the assignment using assignment_id sent in the request
         assignment = Assignment.query.get(assignment_id)
         if not assignment:
-            app.logger.info("Assignment not found for ID: {}".format(assignment_id))
+            app.logger.warning("Assignment not found for ID: {}".format(assignment_id))
             return jsonify({"message": "Assignment not found"}), 404
         app.logger.info("Assignment detail retrieved for ID: {}".format(assignment_id))
         return jsonify(assignment.to_dict()), 200
@@ -166,7 +166,7 @@ def delete_assignment(assignment_id):
         # retrieve the assignment using assignment_id sent in the request
         assignment = Assignment.query.get(assignment_id)
         if not assignment:
-            app.logger.info(f"Assignment not found for ID: {assignment_id}")
+            app.logger.warning(f"Assignment not found for ID: {assignment_id}")
             return jsonify({"message": "Assignment not found"}), 404
 
         # check if the assignment owner and logged in user is same
@@ -235,7 +235,7 @@ def update_assignment(assignment_id):
         # retrieve the assignment using assignment_id sent in the request
         assignment = Assignment.query.get(assignment_id)
         if not assignment:
-            app.logger.info(f"Assignment {assignment_id} not found for update")
+            app.logger.warning(f"Assignment {assignment_id} not found for update")
             return jsonify({"message": "Assignment not found"}), 404
 
         # check if the assignment owner and logged in user is same
