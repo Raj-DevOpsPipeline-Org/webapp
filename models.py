@@ -20,6 +20,7 @@ class Account(db.Model):
     
     # create relation with other tables
     assignments = db.relationship('Assignment', backref='account', lazy=True)
+    submissions = db.relationship('AssignmentSubmission', backref='account', lazy=True)
 
 
 class Assignment(db.Model):
@@ -43,6 +44,9 @@ class Assignment(db.Model):
         ),
     )
     
+    submissions = db.relationship('AssignmentSubmission', backref='assignment', lazy=True)
+
+    
     def to_dict(self):
         return {
             "id": str(self.id),
@@ -52,4 +56,26 @@ class Assignment(db.Model):
             "deadline": self.deadline.isoformat(),
             "assignment_created": self.assignment_created.isoformat(),
             "assignment_updated": self.assignment_updated.isoformat(),
+        }
+
+class AssignmentSubmission(db.Model):
+    id = db.Column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True
+    )
+    assignment_id = db.Column(UUID(as_uuid=True), db.ForeignKey('assignment.id'), nullable=False)
+    account_id = db.Column(UUID(as_uuid=True), db.ForeignKey('account.id'), nullable=False)
+    submission_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    submission_url = db.Column(db.String(255), nullable=False)
+    
+    account = db.relationship("Account", backref="submissions")
+    assignment = db.relationship("Assignment", backref="submissions")
+    
+    def to_dict(self):
+        return {
+            "id": str(self.id),
+            "assignment_id": str(self.assignment_id),
+            "account_id": str(self.account_id),
+            "submission_created": self.submission_created.isoformat(),
+            "submission_updated": self.submission_updated.isoformat(),
+            "submission_url": self.submission_url,
         }

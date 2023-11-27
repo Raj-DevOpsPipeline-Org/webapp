@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import UUID
 
 from flask import Blueprint
@@ -6,7 +7,7 @@ from flask import jsonify, request
 from sqlalchemy.exc import SQLAlchemyError
 
 from extensions import auth
-from models import Account, Assignment, db
+from models import Account, Assignment, AssignmentSubmission, db
 
 # create Blueprint to modularize the code
 assignments_bp = Blueprint("assignments", __name__)
@@ -267,3 +268,52 @@ def update_assignment(assignment_id):
             jsonify({"message": "Unable to update assignment."}),
             400,
         )
+
+
+@assignments_bp.route(f"/{version}/assignments/<assignment_id>/submission", methods=["POST"])
+@auth.login_required
+def submit_assignment(assignment_id):
+    try:
+        data = request.get_json()
+        submission_url = data.get("submission_url")
+        
+        assignment = Assignment.query.get(assignment_id)
+        if not assignment:
+            app.logger.warning(f"Assignment {assignment_id} not found")
+            return jsonify({"message": "Assignment not found"}), 404
+        
+        # check the deadline
+        if datetime.utcnow() > assignment.deadline:
+            app.logger.warning(f"Assignment {assignment_id} submission deadline passed")
+            return jsonify({"message": "Submission deadline has passed."}), 403
+
+        # check number of attempts
+        user_id = auth.current_user().id
+        submission_count = AssignmentSubmission.query.filter_by(assignment_id=assignment_id, account_id=user_id).count()
+        
+        if submission_count >= assignment.num_of_attempts:
+            app.logger.warning(f"Maximum number of attempts exceeded for Assignment {assignment_id}")
+            return jsonify({"message": "Maximum number of attempts exceeded."}), 403
+        
+        # create a new submission
+        new_submission = AssignmentSubmission(
+        assignment_id=assignment.id,
+        account_id=user_id,
+        submission_url=submission_url
+        )
+        db.session.add(new_submission)
+        db.session.commit()
+
+        return jsonify(new_submission.to_dict()), 201
+
+    except SQLAlchemyError as e:
+        app.logger.error(
+            f"Database error occurred while submitting for assignment {assignment_id}: {e}"
+        )
+        return jsonify({"message": "Database error occurred."}), 503
+
+    except Exception as e:
+        app.logger.error(
+            f"Unexpected error while submitting the assignment {assignment_id}: {e}"
+        )
+        return jsonify({"message": "Unable to submit."}), 400
