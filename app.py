@@ -107,10 +107,14 @@ def modify_headers(response):
     response.headers["Pragma"] = "no-cache"
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["content-type"] = "application/json"
-    endpoint = request.endpoint.split(".")[-1]
-    method = request.method.lower()
-    metric_name = f"csye6225_endpoint_{endpoint}_http_{method}"
-    statsd.incr(metric_name)
+    if response.status_code == 405:
+        response.data = ""
+        response.headers["Content-Length"] = "0"
+    if request.endpoint and isinstance(request.endpoint, str):
+        endpoint = request.endpoint.split(".")[-1]
+        method = request.method.lower()
+        metric_name = f"csye6225_endpoint_{endpoint}_http_{method}"
+        statsd.incr(metric_name)
     return response
 
 
