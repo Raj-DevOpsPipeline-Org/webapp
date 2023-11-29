@@ -269,6 +269,7 @@ def update_assignment(assignment_id):
             400,
         )
 
+
 @assignments_bp.route(f"/{version}/assignments/<assignment_id>/submission", methods=["POST"])
 @auth.login_required
 def submit_assignment(assignment_id):
@@ -377,3 +378,4 @@ def submit_assignment(assignment_id):
 #             f"Unexpected error while submitting the assignment {assignment_id}: {e}"
 #         )
 #         return jsonify({"message": "Unable to submit."}), 400
+
