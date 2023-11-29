@@ -317,3 +317,65 @@ def submit_assignment(assignment_id):
             f"Unexpected error while submitting the assignment {assignment_id}: {e}"
         )
         return jsonify({"message": "Unable to submit."}), 400
+
+# To have original submission timstamp and modified updated tiemstamp
+
+# @assignments_bp.route(
+#     f"/{version}/assignments/<assignment_id>/submission", methods=["POST"]
+# )
+# @auth.login_required
+# def submit_assignment(assignment_id):
+#     try:
+#         data = request.get_json()
+#         submission_url = data.get("submission_url")
+
+#         assignment = Assignment.query.get(assignment_id)
+#         if not assignment:
+#             app.logger.warning(f"Assignment {assignment_id} not found")
+#             return jsonify({"message": "Assignment not found"}), 404
+#         # check the deadline
+#         if datetime.utcnow() > assignment.deadline:
+#             app.logger.warning(f"Assignment {assignment_id} submission deadline passed")
+#             return jsonify({"message": "Submission deadline has passed."}), 403
+
+#         user_id = auth.current_user().id
+#         existing_submission = AssignmentSubmission.query.filter_by(
+#             assignment_id=assignment_id, account_id=user_id
+#         ).first()
+
+#         if existing_submission:
+#             if existing_submission.attempts < assignment.num_of_attempts:
+#                 existing_submission.submission_url = submission_url
+#                 existing_submission.submission_updated = datetime.utcnow()
+#                 existing_submission.attempts += 1
+#                 db.session.commit()
+#                 response_message = existing_submission.to_dict()
+#                 status_code = 200
+#             else:
+#                 return jsonify({"message": "Maximum number of attempts exceeded."}), 403
+
+#         else:
+#             new_submission = AssignmentSubmission(
+#                 assignment_id=assignment.id,
+#                 account_id=user_id,
+#                 submission_url=submission_url,
+#             )
+#             db.session.add(new_submission)
+#             db.session.commit()
+#             response_message = new_submission.to_dict()
+#             status_code = 201
+
+#         return jsonify(response_message), status_code
+
+#     except SQLAlchemyError as e:
+#         app.logger.error(
+#             f"Database error occurred while submitting for assignment {assignment_id}: {e}"
+#         )
+#         return jsonify({"message": "Database error occurred."}), 503
+
+#     except Exception as e:
+#         app.logger.error(
+#             f"Unexpected error while submitting the assignment {assignment_id}: {e}"
+#         )
+#         return jsonify({"message": "Unable to submit."}), 400
+
