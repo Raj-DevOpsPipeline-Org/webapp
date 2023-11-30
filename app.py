@@ -38,7 +38,8 @@ app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 app.register_blueprint(assignments_bp)
 
 # Initialize Logging
-file_handler = FileHandler("/var/log/webapp/csye6225.log")
+# file_handler = FileHandler("/var/log/webapp/csye6225.log")
+file_handler = FileHandler("test.log")
 file_handler.setLevel(logging.INFO)
 
 

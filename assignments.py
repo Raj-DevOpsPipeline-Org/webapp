@@ -1,6 +1,9 @@
 from datetime import datetime
+import json
+import os
 from uuid import UUID
 
+import boto3
 from flask import Blueprint
 from flask import current_app as app
 from flask import jsonify, request
@@ -13,7 +16,6 @@ from models import Account, Assignment, AssignmentSubmission, db
 assignments_bp = Blueprint("assignments", __name__)
 
 version = "v1"
-
 
 # use login_required decorator to verify authentication
 @assignments_bp.route(f"/{version}/assignments", methods=["GET"])
@@ -270,18 +272,32 @@ def update_assignment(assignment_id):
         )
 
 
-@assignments_bp.route(f"/{version}/assignments/<assignment_id>/submission", methods=["POST"])
+def post_to_sns(submission_url, user_email, topic_arn):
+    sns_client = boto3.client('sns', region_name='us-west-1')
+    message = {
+        "submission_url": submission_url,
+        "user_email": user_email
+    }
+    response = sns_client.publish(
+        TopicArn=topic_arn,
+        Message=json.dumps(message)
+    )
+    return response
+
+@assignments_bp.route(
+    f"/{version}/assignments/<assignment_id>/submission", methods=["POST"]
+)
 @auth.login_required
 def submit_assignment(assignment_id):
     try:
         data = request.get_json()
         submission_url = data.get("submission_url")
-        
+
         assignment = Assignment.query.get(assignment_id)
         if not assignment:
             app.logger.warning(f"Assignment {assignment_id} not found")
             return jsonify({"message": "Assignment not found"}), 404
-        
+
         # check the deadline
         if datetime.utcnow() > assignment.deadline:
             app.logger.warning(f"Assignment {assignment_id} submission deadline passed")
@@ -289,21 +305,25 @@ def submit_assignment(assignment_id):
 
         # check number of attempts
         user_id = auth.current_user().id
-        submission_count = AssignmentSubmission.query.filter_by(assignment_id=assignment_id, account_id=user_id).count()
-        
+        submission_count = AssignmentSubmission.query.filter_by(
+            assignment_id=assignment_id, account_id=user_id
+        ).count()
+
         if submission_count >= assignment.num_of_attempts:
-            app.logger.warning(f"Maximum number of attempts exceeded for Assignment {assignment_id}")
+            app.logger.warning(
+                f"Maximum number of attempts exceeded for Assignment {assignment_id}"
+            )
             return jsonify({"message": "Maximum number of attempts exceeded."}), 403
-        
+
         # create a new submission
         new_submission = AssignmentSubmission(
-        assignment_id=assignment.id,
-        account_id=user_id,
-        submission_url=submission_url
+            assignment_id=assignment.id,
+            account_id=user_id,
+            submission_url=submission_url,
         )
         db.session.add(new_submission)
         db.session.commit()
-
+        post_to_sns(submission_url, auth.current_user().email, os.getenv("SNS_TOPIC_ARN"))
         return jsonify(new_submission.to_dict()), 201
 
     except SQLAlchemyError as e:
@@ -317,6 +337,7 @@ def submit_assignment(assignment_id):
             f"Unexpected error while submitting the assignment {assignment_id}: {e}"
         )
         return jsonify({"message": "Unable to submit."}), 400
+
 
 # To have original submission timstamp and modified updated tiemstamp
 
@@ -378,4 +399,3 @@ def submit_assignment(assignment_id):
 #             f"Unexpected error while submitting the assignment {assignment_id}: {e}"
 #         )
 #         return jsonify({"message": "Unable to submit."}), 400
-
