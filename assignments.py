@@ -1,6 +1,6 @@
-from datetime import datetime
 import json
 import os
+from datetime import datetime
 from uuid import UUID
 
 import boto3
@@ -16,6 +16,7 @@ from models import Account, Assignment, AssignmentSubmission, db
 assignments_bp = Blueprint("assignments", __name__)
 
 version = "v1"
+
 
 # use login_required decorator to verify authentication
 @assignments_bp.route(f"/{version}/assignments", methods=["GET"])
@@ -272,17 +273,24 @@ def update_assignment(assignment_id):
         )
 
 
-def post_to_sns(submission_url, user_email, topic_arn):
-    sns_client = boto3.client('sns', region_name='us-west-1')
-    message = {
-        "submission_url": submission_url,
-        "user_email": user_email
-    }
-    response = sns_client.publish(
-        TopicArn=topic_arn,
-        Message=json.dumps(message)
-    )
-    return response
+def post_to_sns(submission_url, user_email, topic_arn, assignment_id, submission_count):
+    try:
+        sns_client = boto3.client("sns", region_name="us-west-1")
+        message = {
+            "submission_url": submission_url,
+            "user_email": user_email,
+            "assignment_id": assignment_id,
+            "submission_count": submission_count,
+        }
+        response = sns_client.publish(TopicArn=topic_arn, Message=json.dumps(message))
+        app.logger.info(
+            f"Successfully published to SNS topic {topic_arn} with message: {message}"
+        )
+        return response
+    except Exception as e:
+        app.logger.error(f"Error publishing to SNS topic {topic_arn}: {e}")
+        raise e
+
 
 @assignments_bp.route(
     f"/{version}/assignments/<assignment_id>/submission", methods=["POST"]
@@ -323,7 +331,17 @@ def submit_assignment(assignment_id):
         )
         db.session.add(new_submission)
         db.session.commit()
-        post_to_sns(submission_url, auth.current_user().email, os.getenv("SNS_TOPIC_ARN"))
+        app.logger.info(
+            f"New submission for assignment {assignment_id} by user {user_id} created successfully."
+        )
+        sns_response = post_to_sns(
+            submission_url,
+            auth.current_user().email,
+            os.getenv("SNS_TOPIC_ARN"),
+            assignment_id,
+            submission_count + 1,
+        )
+        app.logger.info(f"SNS response: {sns_response}")
         return jsonify(new_submission.to_dict()), 201
 
     except SQLAlchemyError as e:

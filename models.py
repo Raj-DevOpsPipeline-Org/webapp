@@ -56,26 +56,36 @@ class Assignment(db.Model):
             "assignment_updated": self.assignment_updated.isoformat(),
         }
 
+
 class AssignmentSubmission(db.Model):
-    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True)
-    assignment_id = db.Column(UUID(as_uuid=True), db.ForeignKey('assignment.id'), nullable=False)
-    account_id = db.Column(UUID(as_uuid=True), db.ForeignKey('account.id'), nullable=False)
+    id = db.Column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True
+    )
+    assignment_id = db.Column(
+        UUID(as_uuid=True), db.ForeignKey("assignment.id"), nullable=False
+    )
+    account_id = db.Column(
+        UUID(as_uuid=True), db.ForeignKey("account.id"), nullable=False
+    )
     submission_url = db.Column(db.String(255), nullable=False)
     submission_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    submission_updated = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+    submission_updated = db.Column(
+        db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
     account = db.relationship("Account", backref="submissions")
     assignment = db.relationship("Assignment", backref="submissions")
-    
+
     def to_dict(self):
         return {
             "id": str(self.id),
             "assignment_id": str(self.assignment_id),
             "submission_url": self.submission_url,
             "submission_date": self.submission_date.isoformat(),
-            "submission_updated": self.submission_updated.isoformat()
+            "submission_updated": self.submission_updated.isoformat(),
         }
-        
+
+
 # To have original submission timstamp and modified updated tiemstamp
 
 # class AssignmentSubmission(db.Model):
