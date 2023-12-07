@@ -96,8 +96,10 @@ jobs:
 
       - name: Fetch Launch Template ID
         run: |
+          # LAUNCH_TEMPLATE_ID=$(aws ec2 describe-launch-templates \
+          #   --filters Name=tag:${{ env.LAUNCH_TEMPLATE_KEY }},Values=${{ env.LT_TAG_NAME }} | jq -r '.LaunchTemplates[0].LaunchTemplateId')
           LAUNCH_TEMPLATE_ID=$(aws ec2 describe-launch-templates \
-            --filters Name=tag:${{ env.LAUNCH_TEMPLATE_KEY }},Values=${{ env.LT_TAG_NAME }} | jq -r '.LaunchTemplates[0].LaunchTemplateId')
+            --query "sort_by(LaunchTemplates, &CreateTime)[-1].[LaunchTemplateId]" --output "text")
           echo "LAUNCH_TEMPLATE_ID=${LAUNCH_TEMPLATE_ID}" >> $GITHUB_ENV
           echo "LAUNCH_TEMPLATE_ID"
 
