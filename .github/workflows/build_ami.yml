@@ -4,10 +4,15 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - test_cd
+    types: [opened, reopened, synchronize]
 
 jobs:
   build-and-share-ami:
     runs-on: ubuntu-latest
+    # environment: ${{ github.event.inputs.environment }}
     services:
       postgres:
         image: postgres:15
@@ -24,58 +29,108 @@ jobs:
           --health-retries 5
 
     steps:
-    - name: Check out code
-      uses: actions/checkout@v3
-    
-    - name: Set up Python
-      uses: actions/setup-python@v3
-      with:
-        python-version: 3.11
+      - name: Check out code
+        uses: actions/checkout@v3
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-    
-    - name: Create log directory and file
-      run: |
-        sudo mkdir -p /var/log/webapp
-        sudo touch /var/log/webapp/csye6225.log
-        sudo chmod 666 /var/log/webapp/csye6225.log
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.11
 
-    - name: Run CI test
-      run: |
-        export FLASK_APP=app
-        export FLASK_DEBUG=True
-        export DATABASE_URL=${{ secrets.DATABASE_URL }}
-        export CSV_PATH=./users.csv
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-        # Run the tests
-        python -m unittest integration-test.py
+      - name: Create log directory and file
+        run: |
+          sudo mkdir -p /var/log/webapp
+          sudo touch /var/log/webapp/csye6225.log
+          sudo chmod 666 /var/log/webapp/csye6225.log
 
-    - name: Create webapp zip
-      run: |
-        zip -r webapp.zip . -x '*.git*' -x '.env' -x 'venv/*'
-      
-    - name: Set up AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ vars.AWS_REGION }}
+      - name: Run CI test
+        run: |
+          export FLASK_APP=app
+          export FLASK_DEBUG=True
+          export DATABASE_URL=${{ secrets.DATABASE_URL }}
+          export CSV_PATH=./users.csv
 
-    - name: Set environment variables for Packer
-      run: |
-        echo "PKR_VAR_aws_region=${{ vars.AWS_REGION }}" >> $GITHUB_ENV
-        echo "PKR_VAR_source_ami=${{ vars.SOURCE_AMI }}" >> $GITHUB_ENV
-        echo "PKR_VAR_ssh_username=${{ vars.SSH_USERNAME }}" >> $GITHUB_ENV
-        echo "PKR_VAR_subnet_id=${{ vars.SUBNET_ID }}" >> $GITHUB_ENV
-        echo "PKR_VAR_instance_type=${{ vars.INSTANCE_TYPE }}" >> $GITHUB_ENV
-        echo "PKR_VAR_volume_size=${{ vars.VOLUME_SIZE }}" >> $GITHUB_ENV
-        echo "PKR_VAR_volume_type=${{ vars.VOLUME_TYPE }}" >> $GITHUB_ENV
-        echo "PKR_VAR_ami_users=${{ vars.AMI_USERS }}" >> $GITHUB_ENV
-    
-    - name: Build AMI with Packer
-      run: |
-        packer init .
-        packer build aws-debian.pkr.hcl
+          # Run the tests
+          python -m unittest integration-test.py
+
+      - name: Create webapp zip
+        run: |
+          zip -r webapp.zip . -x '*.git*' -x '.env' -x 'venv/*'
+
+      - name: Set up AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Set environment variables for Packer
+        run: |
+          echo "PKR_VAR_aws_region=${{ vars.AWS_REGION }}" >> $GITHUB_ENV
+          echo "PKR_VAR_source_ami=${{ vars.SOURCE_AMI }}" >> $GITHUB_ENV
+          echo "PKR_VAR_ssh_username=${{ vars.SSH_USERNAME }}" >> $GITHUB_ENV
+          echo "PKR_VAR_subnet_id=${{ vars.SUBNET_ID }}" >> $GITHUB_ENV
+          echo "PKR_VAR_instance_type=${{ vars.INSTANCE_TYPE }}" >> $GITHUB_ENV
+          echo "PKR_VAR_volume_size=${{ vars.VOLUME_SIZE }}" >> $GITHUB_ENV
+          echo "PKR_VAR_volume_type=${{ vars.VOLUME_TYPE }}" >> $GITHUB_ENV
+          echo "PKR_VAR_ami_users=${{ vars.AMI_USERS }}" >> $GITHUB_ENV
+
+      - name: Build AMI with Packer
+        run: |
+          packer init .
+          packer build aws-debian.pkr.hcl
+
+      - name: Fetch AMI ID
+        run: |
+          AMI_ID=$(aws ec2 describe-images \
+            --filters "Name=tag:${{env.AMI_KEY}},Values=${{env.AMI_TAG_NAME}}" | jq -r '.Images[0].ImageId')
+          echo "$AMI_ID=${AMI_ID}" >> $GITHUB_ENV
+          echo "AMI_ID"
+
+      - name: Fetch ASG Name
+        run: |
+          ASG_NAME=$(aws autoscaling describe-auto-scaling-groups \
+            --filters "Name=tag:${{ env.ASG_KEY }},Values=${{ env.ASG_TAG_NAME }}" | jq -r '.AutoScalingGroups[0].AutoScalingGroupName')
+          echo "ASG_NAME=${ASG_NAME}" >> $GITHUB_ENV
+          echo "ASG_NAME"
+
+      - name: Fetch Launch Template ID
+        run: |
+          LAUNCH_TEMPLATE_ID=$(aws ec2 describe-launch-templates \
+            --filters Name=tag:${{ env.LAUNCH_TEMPLATE_KEY }},Values=${{ env.LT_TAG_NAME }} | jq -r '.LaunchTemplates[0].LaunchTemplateId')
+          echo "LAUNCH_TEMPLATE_ID=${LAUNCH_TEMPLATE_ID}" >> $GITHUB_ENV
+          echo "LAUNCH_TEMPLATE_ID"
+
+      - name: Create Launch Template Version
+        run: |
+          aws ec2 create-launch-template-version \
+            --launch-template-id ${LAUNCH_TEMPLATE_ID} \
+            --version-description latest --source-version 1
+            --launch-template-data "{\"ImageId\":\"${AMI_ID}\"}"
+
+      - name: Create Instance Refresh
+        run: |
+          aws autoscaling start-instance-refresh \
+            --auto-scaling-group-name ${ASG_NAME} \
+            --preferences "InstanceWarmup=200"
+
+      - name: Wait for Instance Refresh to complete
+        run: |
+          INSTANCE_REFRESH_STATUS=$(aws autoscaling describe-instance-refreshes --auto-scaling-group-name ${ASG_NAME} --query "InstanceRefreshes[?StartTime!=null] | sort_by(@, &StartTime)[-1].Status" --output "text")
+          while [ "$INSTANCE_REFRESH_STATUS" != "Successful" ]
+          do
+            echo "Instance refresh status: $INSTANCE_REFRESH_STATUS"
+            sleep 10
+            INSTANCE_REFRESH_STATUS=$(aws autoscaling describe-instance-refreshes --auto-scaling-group-name ${ASG_NAME} --query "InstanceRefreshes[?StartTime!=null] | sort_by(@, &StartTime)[-1].Status" --output text)
+            if [ "$INSTANCE_REFRESH_STATUS" == "Failed" ] || [ "$INSTANCE_REFRESH_STATUS" == "Cancelled" ]
+            then
+              echo "Instance refresh failed or cancelled"
+              exit 1
+            fi
+          done
+          echo "Instance refresh status: $INSTANCE_REFRESH_STATUS"
