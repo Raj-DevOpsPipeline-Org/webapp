@@ -4,15 +4,10 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
-    types: [opened, reopened, synchronize]
 
 jobs:
   build-and-share-ami:
     runs-on: ubuntu-latest
-    # environment: ${{ github.event.inputs.environment }}
     services:
       postgres:
         image: postgres:15
