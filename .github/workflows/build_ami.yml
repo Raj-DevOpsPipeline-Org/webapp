@@ -104,12 +104,12 @@ jobs:
 
       - name: Wait for instance refresh to complete
         run: |
-          instance_refresh_status=$(aws autoscaling describe-instance-refreshes --auto-scaling-group-name ${{ secrets.AUTO_SCALING_GROUP_NAME }} --query "InstanceRefreshes[?StartTime!=null] | sort_by(@, &StartTime)[-1].Status" --output "text")
+          instance_refresh_status=$(aws autoscaling describe-instance-refreshes --auto-scaling-group-name ${ASG_NAME} --query "InstanceRefreshes[?StartTime!=null] | sort_by(@, &StartTime)[-1].Status" --output "text")
           while [ "$instance_refresh_status" != "Successful" ]
           do
             echo "Instance refresh status: $instance_refresh_status"
             sleep 10
-            instance_refresh_status=$(aws autoscaling describe-instance-refreshes --auto-scaling-group-name ${{ secrets.AUTO_SCALING_GROUP_NAME }}  --query "InstanceRefreshes[?StartTime!=null] | sort_by(@, &StartTime)[-1].Status" --output text)
+            instance_refresh_status=$(aws autoscaling describe-instance-refreshes --auto-scaling-group-name ${ASG_NAME}  --query "InstanceRefreshes[?StartTime!=null] | sort_by(@, &StartTime)[-1].Status" --output text)
             if [ "$instance_refresh_status" == "Failed" ] || [ "$instance_refresh_status" == "Cancelled" ]
             then
               echo "Instance refresh failed or cancelled"
