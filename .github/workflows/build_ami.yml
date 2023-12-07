@@ -121,6 +121,7 @@ jobs:
       - name: Create Instance Refresh
         run: |
             aws autoscaling start-instance-refresh --auto-scaling-group-name $ASG_NAME 
+            sleep 60
 
 
       - name: Wait for instance refresh to complete
@@ -133,7 +134,7 @@ jobs:
           while [ "$INSTANCE_REFRESH_STATUS" != "Successful" ]
           do
             echo "Instance refresh status: $INSTANCE_REFRESH_STATUS"
-            sleep 10
+            sleep 30
             INSTANCE_REFRESH_STATUS=$(aws autoscaling describe-instance-refreshes  \
               --auto-scaling-group-name ${ASG_NAME}  \
               --query "InstanceRefreshes[?StartTime!=null] | sort_by(@, &StartTime)[-1].Status" \
