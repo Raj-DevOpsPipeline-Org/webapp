@@ -75,10 +75,10 @@ jobs:
           echo "PKR_VAR_volume_type=${{ vars.VOLUME_TYPE }}" >> $GITHUB_ENV
           echo "PKR_VAR_ami_users=${{ vars.AMI_USERS }}" >> $GITHUB_ENV
 
-      # - name: Build AMI with Packer
-      #   run: |
-      #     packer init .
-      #     packer build aws-debian.pkr.hcl
+      - name: Build AMI with Packer
+        run: |
+          packer init .
+          packer build aws-debian.pkr.hcl
 
       - name: Launch Template
         run: |
