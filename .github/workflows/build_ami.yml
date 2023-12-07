@@ -105,10 +105,10 @@ jobs:
 
       - name: Create Launch Template Version
         run: |
-          aws ec2 create-launch-template-version \
-            --launch-template-id ${LAUNCH_TEMPLATE_ID} \
-            --version-description latest --source-version 1
-            --launch-template-data "{\"ImageId\":\"${AMI_ID}\"}"
+          aws ec2 create-launch-template-version \ 
+            --launch-template-id ${LAUNCH_TEMPLATE_ID} \ 
+            --version-description latest --source-version 1 \ 
+            --launch-template-data "ImageId=${AMI_ID}"
 
       - name: Create Instance Refresh
         run: |
