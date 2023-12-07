@@ -99,8 +99,7 @@ jobs:
 
       - name: Fetch Launch Template ID
         run: |
-          LAUNCH_TEMPLATE_ID=$(aws ec2 describe-launch-templates \
-            --filters Name=tag:${{ env.LAUNCH_TEMPLATE_KEY }},Values=${{ env.LT_TAG_NAME }} | jq -r '.LaunchTemplates[0].LaunchTemplateId') 
+          LAUNCH_TEMPLATE_ID=$(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names $ASG_NAME --query "AutoScalingGroups[].LaunchTemplate.LaunchTemplateId" --output text) 
           
           echo "$LAUNCH_TEMPLATE_ID"
           echo "LAUNCH_TEMPLATE_ID=${LAUNCH_TEMPLATE_ID}" >> $GITHUB_ENV
