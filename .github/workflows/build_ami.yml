@@ -22,62 +22,71 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
     steps:
-      - name: Check out code
-        uses: actions/checkout@v3
+    - name: Check out code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: 3.11
 
-      - name: Set up Python
-        uses: actions/setup-python@v3
-        with:
-          python-version: 3.11
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Create log directory and file
+      run: |
+        sudo mkdir -p /var/log/webapp
+        sudo touch /var/log/webapp/csye6225.log
+        sudo chmod 666 /var/log/webapp/csye6225.log
+    - name: Run CI test
+      run: |
+        export FLASK_APP=app
+        export FLASK_DEBUG=True
+        export DATABASE_URL=${{ secrets.DATABASE_URL }}
+        export CSV_PATH=./users.csv
+        # Run the tests
+        python -m unittest integration-test.py
+    - name: Create webapp zip
+      run: |
+        zip -r webapp.zip . -x '*.git*' -x '.env' -x 'venv/*'
+      
+    - name: Set up AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ vars.AWS_REGION }}
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+    - name: Set environment variables for Packer
+      run: |
+        echo "PKR_VAR_aws_region=${{ vars.AWS_REGION }}" >> $GITHUB_ENV
+        echo "PKR_VAR_source_ami=${{ vars.SOURCE_AMI }}" >> $GITHUB_ENV
+        echo "PKR_VAR_ssh_username=${{ vars.SSH_USERNAME }}" >> $GITHUB_ENV
+        echo "PKR_VAR_subnet_id=${{ vars.SUBNET_ID }}" >> $GITHUB_ENV
+        echo "PKR_VAR_instance_type=${{ vars.INSTANCE_TYPE }}" >> $GITHUB_ENV
+        echo "PKR_VAR_volume_size=${{ vars.VOLUME_SIZE }}" >> $GITHUB_ENV
+        echo "PKR_VAR_volume_type=${{ vars.VOLUME_TYPE }}" >> $GITHUB_ENV
+        echo "PKR_VAR_ami_users=${{ vars.AMI_USERS }}" >> $GITHUB_ENV
+  
+  
+    - name: Build AMI with Packer
+      run: |
+        packer init .
+        packer build aws-debian.pkr.hcl
 
-      - name: Create log directory and file
-        run: |
-          sudo mkdir -p /var/log/webapp
-          sudo touch /var/log/webapp/csye6225.log
-          sudo chmod 666 /var/log/webapp/csye6225.log
-
-      - name: Run CI test
-        run: |
-          export FLASK_APP=app
-          export FLASK_DEBUG=True
-          export DATABASE_URL=${{ secrets.DATABASE_URL }}
-          export CSV_PATH=./users.csv
-
-          python -m unittest integration-test.py
-
-      - name: Create webapp zip
-        run: |
-          zip -r webapp.zip . -x '*.git*' -x '.env' -x 'venv/*'
-
+  update-launch-template:
+    needs: build-and-share-ami
+    runs-on: ubuntu-latest
+    steps:
       - name: Set up AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEMO }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEMO }}
           aws-region: ${{ vars.AWS_REGION }}
-
-      - name: Set environment variables for Packer
-        run: |
-          echo "PKR_VAR_aws_region=${{ vars.AWS_REGION }}" >> $GITHUB_ENV
-          echo "PKR_VAR_source_ami=${{ vars.SOURCE_AMI }}" >> $GITHUB_ENV
-          echo "PKR_VAR_ssh_username=${{ vars.SSH_USERNAME }}" >> $GITHUB_ENV
-          echo "PKR_VAR_subnet_id=${{ vars.SUBNET_ID }}" >> $GITHUB_ENV
-          echo "PKR_VAR_instance_type=${{ vars.INSTANCE_TYPE }}" >> $GITHUB_ENV
-          echo "PKR_VAR_volume_size=${{ vars.VOLUME_SIZE }}" >> $GITHUB_ENV
-          echo "PKR_VAR_volume_type=${{ vars.VOLUME_TYPE }}" >> $GITHUB_ENV
-          echo "PKR_VAR_ami_users=${{ vars.AMI_USERS }}" >> $GITHUB_ENV
-
-      - name: Build AMI with Packer
-        run: |
-          packer init .
-          packer build aws-debian.pkr.hcl
 
       - name: Fetch AMI ID
         run: |
