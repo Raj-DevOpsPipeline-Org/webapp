@@ -87,7 +87,7 @@ jobs:
             --output "text")
             
           echo "LATEST_AMI_ID=${LATEST_AMI_ID}" >> $GITHUB_ENV
-          echo "LATEST_AMI_ID"
+          echo "$LATEST_AMI_ID"
 
       - name: Fetch ASG Name
         run: |
@@ -95,26 +95,22 @@ jobs:
             --filters "Name=tag:asg-key,Values=csye6225-asg" | \
             jq -r '.AutoScalingGroups[0].AutoScalingGroupName')
           echo "ASG_NAME=${ASG_NAME}" >> $GITHUB_ENV
-          echo "ASG_NAME"
+          echo "$ASG_NAME"
 
       - name: Fetch Launch Template ID
         run: |
           LAUNCH_TEMPLATE_ID=$(aws ec2 describe-launch-templates \
             --filters Name=tag:${{ env.LAUNCH_TEMPLATE_KEY }},Values=${{ env.LT_TAG_NAME }} | jq -r '.LaunchTemplates[0].LaunchTemplateId') 
-            
+          
+          echo "$LAUNCH_TEMPLATE_ID"
           echo "LAUNCH_TEMPLATE_ID=${LAUNCH_TEMPLATE_ID}" >> $GITHUB_ENV
-          echo "LAUNCH_TEMPLATE_ID"
+          
 
       - name: Create Launch Template Version
         run: |
-            aws ec2 describe-launch-templates \ 
-              --launch-template-id $LAUNCH_TEMPLATE_ID \ 
-              --query "sort_by(LaunchTemplates, &CreateTime)[-1].[LatestVersionNumber]" \ 
-              --output "text"
-
             aws ec2 create-launch-template-version \ 
               --launch-template-id $LAUNCH_TEMPLATE_ID \ 
-              --version-description latest \ 
+              --version-description "update version" \ 
               --source-version 1 \ 
               --launch-template-data "ImageId=$LATEST_AMI_ID"
 
