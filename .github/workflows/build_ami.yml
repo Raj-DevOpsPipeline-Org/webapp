@@ -102,7 +102,7 @@ jobs:
       - name: Wait for instance refresh to complete
         run: |
           ASG_NAME=$(aws autoscaling describe-auto-scaling-groups \
-            --filters "Name=tag:${{ env.ASG_KEY }},Values=${{ env.ASG_TAG_NAME }}" | \
+            --filters "Name=tag:asg-key,Values=csye6225-asg" | \
             jq -r '.AutoScalingGroups[0].AutoScalingGroupName')
           echo "ASG_NAME=${ASG_NAME}" >> $GITHUB_ENV
           echo "ASG_NAME"
