@@ -84,7 +84,7 @@ jobs:
           LATEST_AMI_ID=$($(aws ec2 describe-images --profile=dev \
             --filters "Name=tag:ami-key,Values=csye6225-ami" \
             --query 'sort_by(Images,&CreationDate)[-1].ImageId' \
-            --output "text"
+            --output "text")
             
           echo "LATEST_AMI_ID=${LATEST_AMI_ID}" >> $GITHUB_ENV
           echo "LATEST_AMI_ID"
