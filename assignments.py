@@ -15,7 +15,7 @@ from models import Account, Assignment, AssignmentSubmission, db
 # create Blueprint to modularize the code
 assignments_bp = Blueprint("assignments", __name__)
 
-version = "v2"
+version = "v3"
 
 
 # use login_required decorator to verify authentication
