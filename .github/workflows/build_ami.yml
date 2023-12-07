@@ -111,14 +111,13 @@ jobs:
 
       - name: Create Instance Refresh
         run: |
-            aws autoscaling start-instance-refresh \ 
-              --auto-scaling-group-name $ASG_NAME 
+            aws autoscaling start-instance-refresh --auto-scaling-group-name $ASG_NAME 
 
 
       - name: Wait for instance refresh to complete
         run: |
-          INSTANCE_REFRESH_STATUS=$(aws autoscaling describe-instance-refreshes \ 
-            --auto-scaling-group-name ${ASG_NAME} \ 
+          INSTANCE_REFRESH_STATUS=$(aws autoscaling describe-instance-refreshes \
+            --auto-scaling-group-name ${ASG_NAME} \
             --query "InstanceRefreshes[?StartTime!=null] | sort_by(@, &StartTime)[-1].Status" \
             --output "text")
 
@@ -127,8 +126,8 @@ jobs:
             echo "Instance refresh status: $INSTANCE_REFRESH_STATUS"
             sleep 10
             INSTANCE_REFRESH_STATUS=$(aws autoscaling describe-instance-refreshes  \
-              --auto-scaling-group-name ${ASG_NAME}  \ 
-              --query "InstanceRefreshes[?StartTime!=null] | sort_by(@, &StartTime)[-1].Status" \ 
+              --auto-scaling-group-name ${ASG_NAME}  \
+              --query "InstanceRefreshes[?StartTime!=null] | sort_by(@, &StartTime)[-1].Status" \
               --output text)
 
             if [ "$INSTANCE_REFRESH_STATUS" == "Failed" ] || [ "$INSTANCE_REFRESH_STATUS" == "Cancelled" ]
