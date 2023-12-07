@@ -80,53 +80,35 @@ jobs:
       #     packer init .
       #     packer build aws-debian.pkr.hcl
 
-      - name: Fetch AMI ID
-        run: |
-          AMI_ID=$(aws ec2 describe-images \
-            --filters "Name=tag:${{env.AMI_KEY}},Values=${{env.AMI_TAG_NAME}}" | jq -r '.Images[0].ImageId')
-          echo "$AMI_ID=${AMI_ID}" >> $GITHUB_ENV
-          echo "AMI_ID"
-
-      - name: Fetch ASG Name
+      - name: Launch Template
         run: |
           ASG_NAME=$(aws autoscaling describe-auto-scaling-groups \
-            --filters "Name=tag:${{ env.ASG_KEY }},Values=${{ env.ASG_TAG_NAME }}" | jq -r '.AutoScalingGroups[0].AutoScalingGroupName')
-          echo "ASG_NAME=${ASG_NAME}" >> $GITHUB_ENV
-          echo "ASG_NAME"
+          --filters "Name=tag:${{ env.ASG_KEY }},Values=${{ env.ASG_TAG_NAME }}" | jq -r '.AutoScalingGroups[0].AutoScalingGroupName')
+          echo "ASG_NAME=${ASG_NAME}" >> $GITHUB_ENV  
+          latestAmi=$(aws ec2 describe-images --filters "Name=owner-id,Values=177120415342" --query "sort_by(Images, &CreationDate)[-1].[ImageId]" --output "text")
+          latestLaunchTemplateId=$(aws ec2 describe-launch-templates --query "sort_by(LaunchTemplates, &CreateTime)[-1].[LaunchTemplateId]" --output "text")
+          if [[ ${latestLaunchTemplateId} != 'None' ]]; then
+            latestAutoScalingGroupName=$(aws autoscaling describe-auto-scaling-groups --query "sort_by(AutoScalingGroups, &CreatedTime)[-1].[AutoScalingGroupName]" --output "text")
+            latestVersion=$(aws ec2 describe-launch-templates --launch-template-id $latestLaunchTemplateId --query "sort_by(LaunchTemplates, &CreateTime)[-1].[LatestVersionNumber]" --output "text")
 
-      - name: Fetch Launch Template ID
+            aws ec2 create-launch-template-version --launch-template-id $latestLaunchTemplateId --version-description latest --source-version 1 --launch-template-data "ImageId=$latestAmi"
+            aws autoscaling start-instance-refresh --auto-scaling-group-name $latestAutoScalingGroupName --preferences "InstanceWarmup=200"
+            sleep 60
+          fi
+
+      - name: Wait for instance refresh to complete
         run: |
-          # LAUNCH_TEMPLATE_ID=$(aws ec2 describe-launch-templates \
-          #   --filters Name=tag:${{ env.LAUNCH_TEMPLATE_KEY }},Values=${{ env.LT_TAG_NAME }} | jq -r '.LaunchTemplates[0].LaunchTemplateId')
-          LAUNCH_TEMPLATE_ID=$(aws ec2 describe-launch-templates \
-            --query "sort_by(LaunchTemplates, &CreateTime)[-1].[LaunchTemplateId]" --output "text")
-          echo "LAUNCH_TEMPLATE_ID=${LAUNCH_TEMPLATE_ID}" >> $GITHUB_ENV
-          echo "LAUNCH_TEMPLATE_ID"
-
-      - name: Create Launch Template Version
-        run: |
-          aws ec2 create-launch-template-version --launch-template-id ${LAUNCH_TEMPLATE_ID} --version-description latest --source-version 1 --launch-template-data "ImageId=$AMI_ID"
-
-
-      - name: Create Instance Refresh
-        run: |
-          aws autoscaling start-instance-refresh \
-            --auto-scaling-group-name ${ASG_NAME} \
-            --preferences "InstanceWarmup=200"
-
-      - name: Wait for Instance Refresh to complete
-        run: |
-          INSTANCE_REFRESH_STATUS=$(aws autoscaling describe-instance-refreshes --auto-scaling-group-name ${ASG_NAME} --query "InstanceRefreshes[?StartTime!=null] | sort_by(@, &StartTime)[-1].Status" --output "text")
-          while [ "$INSTANCE_REFRESH_STATUS" != "Successful" ]
+          instance_refresh_status=$(aws autoscaling describe-instance-refreshes --auto-scaling-group-name ${ASG_NAME} --query "InstanceRefreshes[?StartTime!=null] | sort_by(@, &StartTime)[-1].Status" --output "text")
+          while [ "$instance_refresh_status" != "Successful" ]
           do
-            echo "Instance refresh status: $INSTANCE_REFRESH_STATUS"
+            echo "Instance refresh status: $instance_refresh_status"
             sleep 10
-            INSTANCE_REFRESH_STATUS=$(aws autoscaling describe-instance-refreshes --auto-scaling-group-name ${ASG_NAME} --query "InstanceRefreshes[?StartTime!=null] | sort_by(@, &StartTime)[-1].Status" --output text)
-            if [ "$INSTANCE_REFRESH_STATUS" == "Failed" ] || [ "$INSTANCE_REFRESH_STATUS" == "Cancelled" ]
+            instance_refresh_status=$(aws autoscaling describe-instance-refreshes --auto-scaling-group-name ${ASG_NAME}  --query "InstanceRefreshes[?StartTime!=null] | sort_by(@, &StartTime)[-1].Status" --output text)
+            if [ "$instance_refresh_status" == "Failed" ] || [ "$instance_refresh_status" == "Cancelled" ]
             then
               echo "Instance refresh failed or cancelled"
               exit 1
             fi
           done
-          echo "Instance refresh status: $INSTANCE_REFRESH_STATUS"
-  
+          echo "Instance refresh status: $instance_refresh_status"
+          echo "Instance refresh completed successfully"
