@@ -81,7 +81,7 @@ jobs:
 
       - name: Fetch AMI ID
         run: |
-          LATEST_AMI_ID=$($(aws ec2 describe-images --profile=dev \
+          LATEST_AMI_ID=$(aws ec2 describe-images \
             --filters "Name=tag:ami-key,Values=csye6225-ami" \
             --query 'sort_by(Images,&CreationDate)[-1].ImageId' \
             --output "text")
