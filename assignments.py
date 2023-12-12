@@ -284,6 +284,8 @@ def post_to_sns(
     topic_arn,
     assignment_id,
     submission_count,
+    total_attempts,
+    assignment_name,
 ):
     try:
         sns_client = boto3.client("sns", region_name=os.getenv("AWS_REGION"))
@@ -294,6 +296,8 @@ def post_to_sns(
             "user_last_name": user_last_name,
             "assignment_id": assignment_id,
             "submission_count": submission_count,
+            "total_attempts": total_attempts,
+            "assignment_name": assignment_name,
         }
         response = sns_client.publish(TopicArn=topic_arn, Message=json.dumps(message))
         app.logger.info(
@@ -355,6 +359,8 @@ def submit_assignment(assignment_id):
             os.getenv("SNS_TOPIC_ARN"),
             assignment_id,
             submission_count + 1,
+            assignment.num_of_attempts,
+            assignment.name,
         )
         app.logger.info(f"SNS response: {sns_response}")
         return jsonify(new_submission.to_dict()), 201
