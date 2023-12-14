@@ -16,7 +16,7 @@ from models import Account, Assignment, AssignmentSubmission, db
 assignments_bp = Blueprint("assignments", __name__)
 
 
-version = "v1"
+version = "wed"
 
 
 
